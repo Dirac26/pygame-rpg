@@ -23,8 +23,11 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
+    player.update()
+
     screen.fill(WHITE)
-
-    player.update(screen)
-
+    player.draw(screen)
     pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
