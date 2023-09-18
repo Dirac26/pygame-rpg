@@ -1,10 +1,11 @@
 import pygame
-from classes.player import Player
+from classes.player import Player, bullets
+from time import sleep
 
 pygame.init()
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 1200
+SCREEN_HEIGHT = 800
 
 WHITE = (255, 255, 255)
 
@@ -16,17 +17,39 @@ player = Player()
 
 running = True
 
+def inventory_loop():
+    running = True
+    while running:
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_i:
+                    player.inventory.active = False
+                    running = False
+                    break
+                if event.type == pygame.QUIT:
+                    running = False
+        player.inventory.update(events)
+        player.inventory.draw(screen)
+        pygame.display.flip()
+        clock.tick(60)
+
 while running:
     clock.tick(60)
-
-    for event in pygame.event.get():
+    events = pygame.event.get()
+    for event in events:
         if event.type == pygame.QUIT:
             running = False
-
-    player.update()
-
+    if player.inventory.active:
+        inventory_loop()
+        sleep(1)
+    player.update(events)
+    bullets.update()
     screen.fill(WHITE)
     player.draw(screen)
+    for bullet in bullets:
+        bullet.draw(screen)
+    
     pygame.display.flip()
     clock.tick(60)
 
