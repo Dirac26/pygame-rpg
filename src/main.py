@@ -7,6 +7,7 @@ pygame.init()
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 800
 
+pygame.font.init()
 WHITE = (255, 255, 255)
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -29,7 +30,7 @@ def inventory_loop():
                     break
                 if event.type == pygame.QUIT:
                     running = False
-        player.inventory.update(events)
+        player.inventory.update(events, player)
         player.inventory.draw(screen)
         pygame.display.flip()
         clock.tick(60)
@@ -44,6 +45,7 @@ while running:
         inventory_loop()
         sleep(1)
     player.update(events)
+    player.gun.update()
     bullets.update()
     screen.fill(WHITE)
     player.draw(screen)

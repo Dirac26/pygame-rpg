@@ -22,12 +22,12 @@ class Player(pygame.sprite.Sprite):
         self.last_shot_time = pygame.time.get_ticks()
         
     def init_inventory(self):
-        gun = Gun("pistol")
+        gun = Gun("pistol", self.inventory)
         self.gun = gun
-        self.inventory.add_item(InventoryGun("pistol", "../assets/images/9mm-inventory.png", gun))
-        self.inventory.add_item(InventoryGun("9mm-bullets", "../assets/images/9mm-inventory.png", 100))
-        print(self.inventory.items)
-
+        self.inventory.add_item(InventoryGun("pistol", "../assets/images/glock-inventory.png", gun))
+        self.inventory.active_gun = self.inventory.items[0]
+        self.inventory.add_item(InventoryBullet("9mm-bullets", "../assets/images/9mm-inventory.png", 100))
+        self.inventory.add_item(InventoryGun("machine_gun", "../assets/images/m4-inventory.png", Gun("machine_gun", self.inventory)))
 
     def update(self, events):
         #continus movement
@@ -57,9 +57,10 @@ class Player(pygame.sprite.Sprite):
     def shoot(self):
         current_time = pygame.time.get_ticks()
         if current_time - self.last_shot_time >= self.gun.fire_rate:
-            bullet = self.gun.create_bullet(self.rect.centerx, self.rect.centery, self.last_direction)  
-            bullets.add(bullet)
-            self.last_shot_time = current_time
+            bullet = self.gun.shoot(self.rect.centerx, self.rect.centery, self.last_direction)
+            if bullet:
+                bullets.add(bullet)
+                self.last_shot_time = current_time
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
