@@ -1,4 +1,5 @@
 import pygame
+from classes.logger import Logger
 
 class Inventory:
     def __init__(self):
@@ -13,9 +14,16 @@ class Inventory:
         self.count_color = (0, 0, 0)
         self.active_color = (255, 0, 0)
         self.active_gun = None
+        self.logger = Logger()
 
     def add_item(self, item):
-        self.items.append(item)
+        for t in self.items:
+            if t.name == item.name:
+                t.count += item.count
+                break
+        else:
+            self.items.append(item)
+        self.logger.add_message(f"Added {item.count} {item.name} to inventory")
 
     def remove_item(self, item):
         self.items.remove(item)
@@ -51,8 +59,8 @@ class Inventory:
                 screen.blit(count_surface, count_position)
 
                 if self.active_gun and self.active_gun.name == item.name:
-                    border_thickness = 3
-                    border_rect = pygame.Rect(x-border_thickness, y-border_thickness, self.box_size + 2*border_thickness, self.box_size + 2*border_thickness)
+                    border_thickness = 1
+                    border_rect = pygame.Rect(x-border_thickness + 2, y-border_thickness + 2, self.box_size + 2*border_thickness, self.box_size + 2*border_thickness)
                     pygame.draw.rect(screen, (255, 0, 0), border_rect, border_thickness)
 
             # Draw the title

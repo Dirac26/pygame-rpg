@@ -31,20 +31,21 @@ class Gun:
             self.reload_time = 5000
             self.bullet_name = "9mm-bullets"
 
-    def shoot(self, x, y, direction):
+    def shoot(self, x, y, dx, dy):
         if not self.reloading and self.current_ammo > 0:
             # Actual shooting mechanics
             self.current_ammo -= 1
-            bullet = self.create_bullet(x, y, direction)
+            bullet = self.create_bullet(x, y, dx, dy)
             if self.current_ammo == 0:
                 self.start_reload()
             return bullet
 
-    def create_bullet(self, x, y, direction):
+    def create_bullet(self, x, y, dx, dy):
         bullet = Bullet(self.bullet_damage, self.bullet_speed, self.bullet_image)
         bullet.rect.x = x
         bullet.rect.y = y
-        bullet.direction = direction
+        bullet.dx = dx
+        bullet.dy = dy
         self.current_ammo -= 1
         bullet.rotate_based_on_direction()
         return bullet
