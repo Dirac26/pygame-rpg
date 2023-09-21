@@ -1,7 +1,6 @@
 import pygame
 from time import sleep
-from pytmx.util_pygame import load_pygame
-from classes.player import Player, bullets
+from classes.player import Player
 from classes.hud import HUD
 from classes.map import Map
 
@@ -19,7 +18,6 @@ clock = pygame.time.Clock()
 
 player = Player()
 hud = HUD(player)
-bags = pygame.sprite.Group()
 interactables = []
 
 map = Map("../maps/map_1.tmx")
@@ -29,6 +27,15 @@ running = True
 
 spawn_point = map.get_spawn_point(0)
 player.move_to(spawn_point[0], spawn_point[1])
+
+def check_bullet_collision(bullets, targets):
+    for bullet in bullets:
+        hit_list = pygame.sprite.spritecollide(bullet, targets, False)
+        for target in hit_list:
+            bullet.kill()
+            target.take_damage(bullet)
+            print(target.health)
+
 
 def inventory_loop():
     running = True
@@ -43,6 +50,7 @@ def inventory_loop():
                 if event.type == pygame.QUIT:
                     running = False
         player.inventory.update(events, player)
+        screen.fill((220, 220, 220))
         player.inventory.draw(screen)
         pygame.display.flip()
         clock.tick(60)
@@ -63,22 +71,32 @@ while running:
     
     player.update(events, dt)
     map = player.current_map
-    player.gun.update()
-    player.check_for_bags(bags)
+    if player.active_weapon:
+        player.active_weapon.item_object.update()
+    player.check_for_bags(map.loot_bags)
     player.inventory.logger.update()
-    bullets.update()
+    map.active_player_bullets.update()
+    map.active_enemy_bullets.update()
+    check_bullet_collision(map.active_player_bullets, map.enemies)
+    check_bullet_collision(map.active_enemy_bullets, [player])
+
+    map.enemies.update((player.rect.x, player.rect.y), map)
     screen.fill(WHITE)
     player.current_map.draw(screen)
     hud.draw(screen)
     player.inventory.logger.draw(screen)
     player.draw(screen)
 
-    for bullet in bullets:
+    for bullet in map.active_player_bullets:
         bullet.draw(screen)
-    for bag in bags:
+    for bullet in map.active_enemy_bullets:
+        bullet.draw(screen)
+    for bag in map.loot_bags:
         bag.draw(screen)
     for interactable in map.interactables:
         interactable.draw(screen)
+    for enemy in map.enemies:
+        enemy.draw(screen)
 
     pygame.display.flip()
     clock.tick(60)

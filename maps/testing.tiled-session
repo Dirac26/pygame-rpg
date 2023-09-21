@@ -1,0 +1,81 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "test.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        "1512.m00.i125.n037.p.c25.162140309 game ground textures vector.tsx": {
+            "scaleInDock": 0.5,
+            "scaleInEditor": 0.25
+        },
+        "game ground textures vector.tsx": {
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "map1.tmx": {
+            "expandedObjectLayers": [
+                3
+            ],
+            "scale": 1,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 909.5,
+                "y": 205
+            }
+        },
+        "map_1.tmx": {
+            "expandedObjectLayers": [
+                3
+            ],
+            "scale": 1.5,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 721,
+                "y": 334
+            }
+        },
+        "map_2.tmx": {
+            "expandedObjectLayers": [
+                3
+            ],
+            "scale": 0.75,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 969.9999999999999,
+                "y": 149.33333333333337
+            }
+        },
+        "test.tmx": {
+            "expandedObjectLayers": [
+                3
+            ],
+            "scale": 1,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 910.5,
+                "y": 206
+            }
+        }
+    },
+    "last.imagePath": "C:/Users/USER/Downloads",
+    "map.height": 25,
+    "map.lastUsedFormat": "tmx",
+    "map.orientation": null,
+    "map.width": 37,
+    "openFiles": [
+        "test.tmx",
+        "game ground textures vector.tsx"
+    ],
+    "project": "testing.tiled-project",
+    "property.type": "int",
+    "recentFiles": [
+        "game ground textures vector.tsx",
+        "test.tmx",
+        "1512.m00.i125.n037.p.c25.162140309 game ground textures vector.tsx"
+    ],
+    "tileset.lastUsedFormat": "tsx"
+}

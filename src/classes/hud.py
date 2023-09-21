@@ -6,6 +6,9 @@ class HUD:
         self.player = player  # Assuming the player object has health, gold, and active_weapon attributes
         self.font = pygame.font.SysFont(None, 36)  # You can choose another font and size
         self.small_font = pygame.font.SysFont(None, 24)
+        self.border_thickness = 5
+        self.border_size = 100
+        self.border_color = (0, 0, 0)
 
     def draw(self, screen):
         # Draw HP bar
@@ -21,12 +24,12 @@ class HUD:
         screen.blit(gold_text, (10, 40))
 
         # Display active weapon and ammo
-        if self.player.active_gun:
-            screen.blit(self.player.active_gun.image, (10, screen.get_height() - 100))
-            ammo_text = self.small_font.render(f"Ammo: {self.player.active_gun.item_object.current_ammo} / {self.player.active_gun.item_object.clip_size}", True, (0, 0, 0))
+        if self.player.active_weapon:
+            screen.blit(self.player.active_weapon.image, (10, screen.get_height() - 100))
+            ammo_text = self.small_font.render(f"Ammo: {self.player.active_weapon.item_object.current_ammo} / {self.player.active_weapon.item_object.clip_size}", True, (0, 0, 0))
             screen.blit(ammo_text, (20, screen.get_height() - 50))
 
-        if self.player.active_gun.item_object.reloading:
+        if self.player.active_weapon and self.player.active_weapon.item_object.reloading:
             reload_text = self.small_font.render("Reloading...", True, (255, 0, 0))
             player_position = self.player.rect.topleft
             reload_position = (player_position[0] + self.player.rect.width // 2 - reload_text.get_width() // 2, player_position[1] - 30)
@@ -43,6 +46,15 @@ class HUD:
         total_width = sum(30 for effect in active_effects) + spacing * (len(active_effects) - 1)
         start_x = (screen_width - total_width) // 2
         start_y = screen.get_height() - 60
+
+        # Top border
+        pygame.draw.rect(screen, self.border_color, (0, 0, 1200, self.border_thickness))
+        # Bottom border
+        pygame.draw.rect(screen, self.border_color, (0, 795, 1200, self.border_thickness))
+        # Left border
+        pygame.draw.rect(screen, self.border_color, (0, 0, self.border_thickness, 800))
+        # Right border
+        pygame.draw.rect(screen, self.border_color, (1195, 0, self.border_thickness, 800))
 
         for effect in active_effects:
             effect_ui = StatusEffectUI(start_x, start_y, effect)

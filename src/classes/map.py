@@ -1,8 +1,11 @@
 import os
+import pygame
 import pytmx
-from classes.item import InventoryBullet
+from classes.item import InventoryBullet, InventoryGun, InventoryMelee
+from classes.gun import Gun
 from classes.interactable import WoodenChest
 from classes.interactable import Entrance
+from classes.enemy import enemy_constructor
 
 class Map:
     def __init__(self, map_path):
@@ -13,9 +16,13 @@ class Map:
         self.enterences = []
         self.spawn_points = {}
         self.npcs = []
+        self.enemies = pygame.sprite.Group()
         self.interactables = []
+        self.loot_bags = pygame.sprite.Group()
         self.zones = {}
         self.load_map()
+        self.active_player_bullets = pygame.sprite.Group()
+        self.active_enemy_bullets = pygame.sprite.Group()
 
     def load_map(self):
         self.tmx_data = pytmx.load_pygame(self.map_path)
@@ -29,6 +36,15 @@ class Map:
                     items = [InventoryBullet("9mm-bullets", "../assets/images/9mm-inventory.png", 20)]
                     chest = WoodenChest(object.x, object.y, items, id=chest_id, angle=angle)
                     self.interactables.append(chest)
+                elif chest_type == "starter_chest":
+                    # Add a chest with gold items at object.x, object.y
+                    items = [InventoryGun("pistol", "../assets/images/glock-inventory.png", Gun("pistol", None)),
+                             InventoryMelee("knife", "../assets/images/knife-inventory.png"),
+                             InventoryGun("machine_gun", "../assets/images/m4a1-inventory.png", Gun("machine_gun", None)),
+                             InventoryBullet("5.56-bullets", "../assets/images/5.56-inventory.png", 300)
+                             ]
+                    chest = WoodenChest(object.x, object.y, items, id=chest_id, angle=angle)
+                    self.interactables.append(chest)
             if 'user_spawn' in object.name:
                 spawn = object
                 from_id = object.properties.get('from_map_id')
@@ -37,6 +53,10 @@ class Map:
                 to_id = object.properties.get('to_map_id')
                 entrance = Entrance(object.x, object.y, to_id)
                 self.interactables.append(entrance)
+            if "enemy_spawn" in object.name:
+                enemy_type = object.properties.get('obj_type')
+                enemy = enemy_constructor(object.x, object.y, enemy_type)
+                self.enemies.add(enemy)
         self.get_map_zones()
 
     def get_spawn_point(self, from_map_id):
@@ -57,13 +77,16 @@ class Map:
         return int(filename.split('_')[1].split('.')[0])
     
     def draw(self, screen):
+        offset_x = 0
+        offset_y = 0 
+
         # Draw the map onto the screen
         for layer in self.tmx_data.visible_layers:
             if isinstance(layer, pytmx.TiledTileLayer):
                 for x, y, image in layer.tiles():
-                    screen.blit(image, (x * self.tmx_data.tilewidth, y * self.tmx_data.tileheight))
+                    screen.blit(image, ((x * self.tmx_data.tilewidth) + offset_x, (y * self.tmx_data.tileheight) + offset_y))
             elif isinstance(layer, pytmx.TiledObjectGroup):
                 for obj in layer:
                     if obj.image:
-                        screen.blit(obj.image, (obj.x, obj.y))
+                        screen.blit(obj.image, (obj.x + offset_x, obj.y + offset_y))
 

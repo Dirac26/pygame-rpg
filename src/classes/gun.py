@@ -2,13 +2,13 @@ import pygame
 from classes.bullet import Bullet
 
 class Gun:
-    def __init__(self, type, inventory):
-        self.type = type
+    def __init__(self, name, inventory):
+        self.name = name
         self.reloading = False
         self.reload_start_time = None
         self.inventory = inventory
         
-        if self.type == "pistol":
+        if self.name == "pistol":
             self.bullet_damage = 10
             self.bullet_speed = 10
             self.bullet_image = '../assets/images/9mm-ingame.png'
@@ -20,16 +20,16 @@ class Gun:
             self.bullet_name = "9mm-bullets"
 
 
-        elif self.type == "machine_gun":
-            self.bullet_damage = 5
-            self.bullet_speed = 15
-            self.bullet_image = '../assets/images/9mm-ingame.png'
-            self.game_image = pygame.image.load('../assets/images/9mm-ingame.png')
+        elif self.name == "machine_gun":
+            self.bullet_damage = 10
+            self.bullet_speed = 20
+            self.bullet_image = '../assets/images/5.56-ingame.png'
+            self.game_image = pygame.image.load('../assets/images/5.56-ingame.png')
             self.clip_size = 30
             self.current_ammo = 30
             self.fire_rate = 100
             self.reload_time = 5000
-            self.bullet_name = "9mm-bullets"
+            self.bullet_name = "5.56-bullets"
 
     def shoot(self, x, y, dx, dy):
         if not self.reloading and self.current_ammo > 0:
@@ -51,14 +51,15 @@ class Gun:
         return bullet
     
     def start_reload(self):
-        self.bullet_inventory_object = self.inventory.get_item("9mm-bullets")
+        self.bullet_inventory_object = self.inventory.get_item(self.bullet_name)
         if not self.reloading and self.bullet_inventory_object and self.bullet_inventory_object.count > 0:
             self.reloading = True
             self.reload_start_time = pygame.time.get_ticks()
 
     def finish_reload(self):
         # Determine how many bullets are transferred from stored_ammo to current_ammo
-        transfer_ammo = min(self.bullet_inventory_object.count, self.clip_size)
+        needed_ammo = self.clip_size - self.current_ammo
+        transfer_ammo = min(self.bullet_inventory_object.count, needed_ammo)
         self.current_ammo += transfer_ammo
         self.bullet_inventory_object.count -= transfer_ammo
         self.reloading = False

@@ -6,28 +6,39 @@ from classes.status_effects import SlowEffect, DamageEffect
 from classes.map import Map
 import math
 
-bullets = pygame.sprite.Group()
-
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
+        #position and ui
         self.image = pygame.image.load("../assets/images/main-player-1.png")
         self.rect = self.image.get_rect()
         self.rect.x = 1100
         self.rect.y = 100
-        self.inventory = Inventory()
-        self.init_inventory()
-        self.max_speed = 5
-        self.speed = 5
-        self.last_direction = 'left'
-        self.last_shot_time = pygame.time.get_ticks()
-        self.health = 100
-        self.gold = 0
-        self.status_effects = []
-        self.maps = {}
         self.dx = 1
         self.dy = 0
+        self.last_position = self.rect.topleft
+        self.last_shot_time = pygame.time.get_ticks()
+
+        #maps, weapons, and inventory
+        self.inventory = Inventory()
+        self.active_weapon = None
+        self.active_melee_weapon = None
+        self.head_armor = None
+        self.chest_armor = None
+        self.leg_armor = None
+        self.boots_armor = None
+        self.maps = {}
+        self.gold = 0
         self.current_map = None
+
+        #stats
+        self.health = 100
+        self.max_speed = 5
+        self.speed = 5
+
+        self.malee_damage = 1
+        self.status_effects = []
+
 
     def init_map(self, map, map_id):
         self.maps[map_id] = map
@@ -37,19 +48,20 @@ class Player(pygame.sprite.Sprite):
         self.inventory.add_item(item)
 
     def transition_to_map(self, map_id):
-        print(self.maps)
         last_map_id = self.current_map.map_id
         new_map = Map(f"../maps/map_{map_id}.tmx") if map_id not in self.maps else self.maps[map_id]
         self.maps[map_id] = new_map
         spwan_x, spawn_y = new_map.get_spawn_point(last_map_id)
         self.current_map = new_map
         self.move_to(spwan_x, spawn_y)
+        print(self.current_map.enemies)
 
-    def init_inventory(self):
-        self.gun = Gun("pistol", self.inventory)
-        self.active_gun = InventoryGun("pistol", "../assets/images/glock-inventory.png", self.gun)
-        self.inventory.add_item(self.active_gun)
-        self.inventory.active_gun = self.inventory.items[0] 
+    def set_gun(self, inv_gun):
+        self.active_weapon = inv_gun
+        inv_gun.item_object.inventory = self.inventory
+    
+    def set_melee(self, inv_melee):
+        self.active_melee_weapon = inv_melee
 
     def handle_movment(self, keys):
         move_left = keys[pygame.K_LEFT] or keys[pygame.K_a]
@@ -60,12 +72,16 @@ class Player(pygame.sprite.Sprite):
         dx, dy = 0, 0
         if move_left:
             dx -= 1
+            self.last_position = self.rect.topleft
         if move_right:
             dx += 1
+            self.last_position = self.rect.topleft
         if move_up:
             dy -= 1
+            self.last_position = self.rect.topleft
         if move_down:
             dy += 1
+            self.last_position = self.rect.topleft
 
         length = math.sqrt(dx**2 + dy**2)
         if length > 0:
@@ -82,20 +98,17 @@ class Player(pygame.sprite.Sprite):
         zones = self.current_map.zones
         interactables = self.current_map.interactables
 
-        last_position = self.rect.topleft
         #continus movement
         keys = pygame.key.get_pressed()
         self.handle_movment(keys)
-        if keys[pygame.K_SPACE]:
-            self.shoot()
             
         if not self.is_in_zone(zones["walkable"]) or self.is_in_zone(zones["unwalkable"]) or self.is_in_zone(zones["wall"]):
             # If outside walkable area, revert the position
-            self.rect.topleft = last_position
+            self.rect.topleft = self.last_position
         
 
         self.near_interactable = self.check_near_interactable(interactables)
-
+        mouse_buttons = pygame.mouse.get_pressed()
         #single pressed button
         for event in events:
             if event.type == pygame.KEYDOWN:
@@ -103,29 +116,60 @@ class Player(pygame.sprite.Sprite):
                     self.inventory.active = True
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
-                    self.gun.start_reload()
+                    self.active_weapon.item_object.start_reload()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_e and self.near_interactable:
                     self.near_interactable.interact(player=self)
+            if mouse_buttons[0]:
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+                self.shoot(mouse_x, mouse_y)
         
         self.handle_zones()
 
         for status in self.status_effects:
             status.update(dt)
             status.effect(self)
-            
-    def shoot(self):
+        
+        self.check_enemy_collision(self.current_map.enemies)
+    
+    def shoot(self, target_x, target_y):
         current_time = pygame.time.get_ticks()
-        if current_time - self.last_shot_time >= self.gun.fire_rate:
-            bullet = self.gun.shoot(self.rect.centerx, self.rect.centery, self.dx, self.dy)
+        dx = target_x - self.rect.x
+        dy = target_y - self.rect.y
+        if current_time - self.last_shot_time >= self.active_weapon.item_object.fire_rate:
+            bullet = self.active_weapon.item_object.shoot(self.rect.centerx, self.rect.centery, dx, dy)
             if bullet:
-                bullets.add(bullet)
+                self.current_map.active_player_bullets.add(bullet)
                 self.last_shot_time = current_time
     
     def check_for_bags(self, bags):
         hits = pygame.sprite.spritecollide(self, bags, False)
         for bag in hits:
             bag.collect(self)
+
+    def check_enemy_collision(self, enemies):
+        for enemy in enemies:
+            self.take_damage(enemy)
+
+    def take_damage(self, enemy, knockback_distance=10):
+        if pygame.sprite.collide_rect(self, enemy):
+            player_dmg = self.malee_damage if self.melee_weapon is None else self.melee_weapon.damage
+            self.health -= enemy.malee_damage
+            enemy.health -= player_dmg
+            dx = enemy.rect.x - self.rect.x
+            dy = enemy.rect.y - self.rect.y
+            distance = (dx**2 + dy**2)**0.5
+
+            # Normalize the direction vector
+            if distance > 0:
+                dx /= distance
+                dy /= distance
+
+            # Apply knockback to both player and enemy
+            self.rect.x -= dx * knockback_distance
+            self.rect.y -= dy * knockback_distance
+            enemy.rect.x += dx * knockback_distance
+            enemy.rect.y += dy * knockback_distance
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
