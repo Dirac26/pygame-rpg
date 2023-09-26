@@ -7,10 +7,25 @@
     "expandedProjectPaths": [
         "."
     ],
+    "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "1512.m00.i125.n037.p.c25.162140309 game ground textures vector.tsx": {
             "scaleInDock": 0.5,
             "scaleInEditor": 0.25
+        },
+        "classic.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "decorations.tsx": {
+            "dynamicWrapping": false
+        },
+        "dirtpath_tiles.tsx": {
+            "dynamicWrapping": false
+        },
+        "fence_tiles.tsx": {
+            "dynamicWrapping": false
         },
         "game ground textures vector.tsx": {
             "scaleInDock": 0.5,
@@ -31,11 +46,11 @@
             "expandedObjectLayers": [
                 3
             ],
-            "scale": 1.5,
-            "selectedLayer": 1,
+            "scale": 0.75,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 721,
-                "y": 334
+                "x": 512.6666666666666,
+                "y": 424
             }
         },
         "map_2.tmx": {
@@ -45,9 +60,34 @@
             "scale": 0.75,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 969.9999999999999,
-                "y": 149.33333333333337
+                "x": 747.3333333333333,
+                "y": 461.33333333333337
             }
+        },
+        "map_4.tmx": {
+            "expandedObjectLayers": [
+                3
+            ],
+            "scale": 0.75,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 648.6666666666667,
+                "y": 542.6666666666665
+            }
+        },
+        "map_5.tmx": {
+            "expandedObjectLayers": [
+                3
+            ],
+            "scale": 0.75,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 348.66666666666663,
+                "y": 502.6666666666666
+            }
+        },
+        "terrain_tiles_v2.tsx": {
+            "dynamicWrapping": false
         },
         "test.tmx": {
             "expandedObjectLayers": [
@@ -59,9 +99,12 @@
                 "x": 910.5,
                 "y": 206
             }
+        },
+        "water_and_island_tiles_v2.tsx": {
+            "dynamicWrapping": false
         }
     },
-    "last.imagePath": "C:/Users/USER/Downloads",
+    "last.imagePath": "C:/Users/USER/Desktop/programming/pygame-rpg/pygame-rpg/maps",
     "map.height": 25,
     "map.lastUsedFormat": "tmx",
     "map.orientation": null,
@@ -71,11 +114,13 @@
         "game ground textures vector.tsx"
     ],
     "project": "testing.tiled-project",
-    "property.type": "int",
+    "property.type": "string",
     "recentFiles": [
+        "classic.tsx",
+        "1512.m00.i125.n037.p.c25.162140309 game ground textures vector.tsx",
         "game ground textures vector.tsx",
-        "test.tmx",
-        "1512.m00.i125.n037.p.c25.162140309 game ground textures vector.tsx"
+        "test.tmx"
     ],
-    "tileset.lastUsedFormat": "tsx"
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.type": 0
 }

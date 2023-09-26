@@ -1,70 +1,91 @@
 import pygame
 from classes.bullet import Bullet
+from classes.shooting_style import ShootingStyle, PistolStyle, ShotgunStyle
 
 class Gun:
-    def __init__(self, name, inventory):
+    def __init__(self, name, bullet_name, bullet_damage, bullet_speed,
+                 bullet_image_path, clip_size, current_ammo, reload_time, fire_rate, bullet_distance,
+                 knockback_distance, sound_file, reload_sound_file):
         self.name = name
+        self.bullet_name = bullet_name
+        self.bullet_damage = bullet_damage
+        self.bullet_speed = bullet_speed
+        self.bullet_image = bullet_image_path
+        self.clip_size = clip_size
+        self.current_ammo = current_ammo
+        self.reload_time = reload_time
         self.reloading = False
-        self.reload_start_time = None
-        self.inventory = inventory
-        
-        if self.name == "pistol":
-            self.bullet_damage = 10
-            self.bullet_speed = 10
-            self.bullet_image = '../assets/images/9mm-ingame.png'
-            self.game_image = pygame.image.load('../assets/images/9mm-ingame.png')
-            self.clip_size = 10
-            self.current_ammo = 10
-            self.fire_rate = 500
-            self.reload_time = 5000
-            self.bullet_name = "9mm-bullets"
+        self.reload_start_time = 0
+        self.bullet_inventory_object = None
+        self.fire_rate = fire_rate
+        self.bullet_distance = bullet_distance
+        self.shots_per_click = 1
+        self.knockback_distance = knockback_distance
+        self.shoot_sound = pygame.mixer.Sound(sound_file)
+        self.reload_sound = pygame.mixer.Sound(reload_sound_file)
+        self.shoot_sound.set_volume(0.1)
+        self.reload_sound.set_volume(0.1)
 
 
-        elif self.name == "machine_gun":
-            self.bullet_damage = 10
-            self.bullet_speed = 20
-            self.bullet_image = '../assets/images/5.56-ingame.png'
-            self.game_image = pygame.image.load('../assets/images/5.56-ingame.png')
-            self.clip_size = 30
-            self.current_ammo = 30
-            self.fire_rate = 100
-            self.reload_time = 5000
-            self.bullet_name = "5.56-bullets"
-
-    def shoot(self, x, y, dx, dy):
+    def shoot(self, x, y, dx, dy, inventory):
         if not self.reloading and self.current_ammo > 0:
             # Actual shooting mechanics
-            self.current_ammo -= 1
-            bullet = self.create_bullet(x, y, dx, dy)
-            if self.current_ammo == 0:
-                self.start_reload()
+            self.current_ammo -= self.shots_per_click
+            bullet = self.shooting_style.shoot(x, y, dx, dy)
+            self.shoot_sound.play()
+            if self.current_ammo <= 0:
+                self.start_reload(inventory)
             return bullet
 
-    def create_bullet(self, x, y, dx, dy):
-        bullet = Bullet(self.bullet_damage, self.bullet_speed, self.bullet_image)
-        bullet.rect.x = x
-        bullet.rect.y = y
-        bullet.dx = dx
-        bullet.dy = dy
-        self.current_ammo -= 1
-        bullet.rotate_based_on_direction()
-        return bullet
+    @classmethod
+    def from_data(cls, data):
+        obj = cls(data['name'],
+                   data['bullet_name'],
+                   data['bullet_damage'],
+                   data['bullet_speed'],
+                   data['bullet_image_path'],
+                   data['clip_size'],
+                   data['current_ammo'],
+                   data['reload_time'],
+                   data['fire_rate'],
+                   data['bullet_distance'],
+                   data['knockback_distance'],
+                   data['shoot_sound'],
+                   data['reload_sound']
+                   )
+        if data["shooting_style"] == 'automatic':
+            obj.shooting_style = PistolStyle(data['bullet_damage'],
+                                             data['bullet_speed'],
+                                             data['bullet_distance'],
+                                             data['bullet_image_path'],
+                                             data['knockback_distance']
+                                            )
+        elif data["shooting_style"] == 'shotgun':
+            obj.shooting_style = ShotgunStyle(data['bullet_damage'],
+                                              data['bullet_speed'],
+                                              data['bullet_distance'],
+                                              data['bullet_image_path'],
+                                              data['knockback_distance']
+                                             )
+        return obj
     
-    def start_reload(self):
-        self.bullet_inventory_object = self.inventory.get_item(self.bullet_name)
-        if not self.reloading and self.bullet_inventory_object and self.bullet_inventory_object.count > 0:
+    def start_reload(self, inventory):
+        bullet_inventory_object = inventory.get_item(self.bullet_name)
+        if not self.reloading and bullet_inventory_object and bullet_inventory_object.count > 0:
             self.reloading = True
             self.reload_start_time = pygame.time.get_ticks()
+            self.reload_sound.play()
 
-    def finish_reload(self):
-        # Determine how many bullets are transferred from stored_ammo to current_ammo
+    def finish_reload(self, inventory):
+        bullet_inventory_object = inventory.get_item(self.bullet_name)
         needed_ammo = self.clip_size - self.current_ammo
-        transfer_ammo = min(self.bullet_inventory_object.count, needed_ammo)
+        transfer_ammo = min(bullet_inventory_object.count, needed_ammo)
         self.current_ammo += transfer_ammo
-        self.bullet_inventory_object.count -= transfer_ammo
+        bullet_inventory_object.count -= transfer_ammo
         self.reloading = False
 
-    def update(self):
+    def update(self, inventory):
         if self.reloading:
             if pygame.time.get_ticks() - self.reload_start_time > self.reload_time:
-                self.finish_reload()
+                self.finish_reload(inventory)
+

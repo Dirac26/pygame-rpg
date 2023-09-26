@@ -1,0 +1,19 @@
+{
+    "name": "m4a1",
+    "bullet_name": "5.56",
+    "bullet_damage": 20,
+    "bullet_speed": 20,
+    "bullet_image_path": "./assets/images/5.56-ingame.png",
+    "clip_size": 30,
+    "current_ammo": 30,
+    "reload_time": 3000,
+    "lore": "machine gun, it shoots fast i guess",
+    "inventory_image_path": "./assets/images/m4a1-inventory.png",
+    "fire_rate": 100,
+    "bullet_distance": 400,
+    "shooting_style": "automatic",
+    "knockback_distance": 10,
+    "shoot_sound": "./assets/sounds/m4a1-shoot.wav",
+    "reload_sound": "./assets/sounds/m4a1-reload.wav"
+
+    }

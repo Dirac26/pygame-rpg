@@ -10,7 +10,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         #position and ui
-        self.image = pygame.image.load("../assets/images/main-player-1.png")
+        self.image = pygame.image.load("./assets/images/main-player-1.png")
         self.rect = self.image.get_rect()
         self.rect.x = 1100
         self.rect.y = 100
@@ -39,6 +39,19 @@ class Player(pygame.sprite.Sprite):
         self.malee_damage = 1
         self.status_effects = []
 
+        self.in_dialog = False
+        self.current_dialog = None
+        self.active_quests = []
+        self.finished_quests = []
+        self.old_dialogs = []
+        self.kill_counts = {
+            "zombie": 0, 
+        }
+        self.quest_view = None
+        self.is_attacking = False
+        self.attack_timer = 0
+
+
 
     def init_map(self, map, map_id):
         self.maps[map_id] = map
@@ -49,12 +62,11 @@ class Player(pygame.sprite.Sprite):
 
     def transition_to_map(self, map_id):
         last_map_id = self.current_map.map_id
-        new_map = Map(f"../maps/map_{map_id}.tmx") if map_id not in self.maps else self.maps[map_id]
+        new_map = Map(f"./maps/map_{map_id}.tmx") if map_id not in self.maps else self.maps[map_id]
         self.maps[map_id] = new_map
         spwan_x, spawn_y = new_map.get_spawn_point(last_map_id)
         self.current_map = new_map
         self.move_to(spwan_x, spawn_y)
-        print(self.current_map.enemies)
 
     def set_gun(self, inv_gun):
         self.active_weapon = inv_gun
@@ -62,6 +74,19 @@ class Player(pygame.sprite.Sprite):
     
     def set_melee(self, inv_melee):
         self.active_melee_weapon = inv_melee
+
+    def set_in_dialog(self, in_dialog):
+        self.current_dialog = in_dialog
+        self.in_dialog = True
+
+    def dialog_finished(self):
+        self.in_dialog = False
+        self.old_dialogs.append(self.current_dialog)
+        self.current_dialog = None
+
+    def add_quest(self, quest):
+        self.active_quests.append(quest)
+        quest.get_active_objective().assign_player(self)
 
     def handle_movment(self, keys):
         move_left = keys[pygame.K_LEFT] or keys[pygame.K_a]
@@ -115,33 +140,53 @@ class Player(pygame.sprite.Sprite):
                 if event.key == pygame.K_i:
                     self.inventory.active = True
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_j:
+                    self.quest_view.active = True
+            if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
-                    self.active_weapon.item_object.start_reload()
+                    self.active_weapon.item_object.start_reload(self.inventory)
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_e and self.near_interactable:
                     self.near_interactable.interact(player=self)
             if mouse_buttons[0]:
                 mouse_x, mouse_y = pygame.mouse.get_pos()
                 self.shoot(mouse_x, mouse_y)
-        
+            if mouse_buttons[2]: 
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+                self.melee_attack(mouse_x, mouse_y)        
         self.handle_zones()
 
         for status in self.status_effects:
             status.update(dt)
             status.effect(self)
+
+        for quest in self.active_quests:
+            quest.update(self)
         
         self.check_enemy_collision(self.current_map.enemies)
     
     def shoot(self, target_x, target_y):
+        if self.active_weapon is None:
+            return
         current_time = pygame.time.get_ticks()
         dx = target_x - self.rect.x
         dy = target_y - self.rect.y
         if current_time - self.last_shot_time >= self.active_weapon.item_object.fire_rate:
-            bullet = self.active_weapon.item_object.shoot(self.rect.centerx, self.rect.centery, dx, dy)
-            if bullet:
-                self.current_map.active_player_bullets.add(bullet)
-                self.last_shot_time = current_time
+            bullets = self.active_weapon.item_object.shoot(self.rect.centerx, self.rect.centery, dx, dy, self.inventory)
+            if bullets:
+                for bullet in bullets:
+                    self.current_map.active_player_bullets.add(bullet)
+                    self.last_shot_time = current_time
     
+    def melee_attack(self, target_x, target_y):
+        current_time = pygame.time.get_ticks()
+        if self.active_melee_weapon is None:
+            return
+        if current_time - self.active_melee_weapon.item_object.last_swing_time < self.active_melee_weapon.item_object.swing_cooldown:
+            return
+
+        self.active_melee_weapon.item_object.swing(self.rect.centerx, self.rect.centery, target_x, target_y)
+
     def check_for_bags(self, bags):
         hits = pygame.sprite.spritecollide(self, bags, False)
         for bag in hits:
@@ -149,31 +194,24 @@ class Player(pygame.sprite.Sprite):
 
     def check_enemy_collision(self, enemies):
         for enemy in enemies:
-            self.take_damage(enemy)
+            if self.rect.colliderect(enemy.rect):
+                self.take_damage(enemy.melee_damage, enemy.knockback_distance, enemy.rect.x, enemy.rect.y)
 
-    def take_damage(self, enemy, knockback_distance=10):
-        if pygame.sprite.collide_rect(self, enemy):
-            player_dmg = self.malee_damage if self.melee_weapon is None else self.melee_weapon.damage
-            self.health -= enemy.malee_damage
-            enemy.health -= player_dmg
-            dx = enemy.rect.x - self.rect.x
-            dy = enemy.rect.y - self.rect.y
-            distance = (dx**2 + dy**2)**0.5
-
-            # Normalize the direction vector
-            if distance > 0:
-                dx /= distance
-                dy /= distance
-
-            # Apply knockback to both player and enemy
-            self.rect.x -= dx * knockback_distance
-            self.rect.y -= dy * knockback_distance
-            enemy.rect.x += dx * knockback_distance
-            enemy.rect.y += dy * knockback_distance
+    def take_damage(self, damage, knockback_distance, x, y):
+        self.health -= damage
+        dx = x - self.rect.x
+        dy = x - self.rect.y
+        distance = (dx**2 + dy**2)**0.5
+        if distance > 0:
+            dx /= distance
+            dy /= distance
+        self.rect.x -= dx * knockback_distance
+        self.rect.y -= dy * knockback_distance
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
         pygame.draw.rect(surface, (255, 0, 0), self.rect, 2)
+        # pygame.draw.circle(surface, (255, 0, 0), (self.rect.centerx, self.rect.centery), 20)
     
     def apply_status(self, status):
         # Check if the status effect is already active

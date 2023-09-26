@@ -3,7 +3,7 @@ import pygame
 class Bag(pygame.sprite.Sprite):
     def __init__(self, x, y, contents):
         super().__init__()
-        self.image = pygame.image.load("../assets/images/bundle.png")
+        self.image = pygame.image.load("./assets/images/bundle.png")
         self.rect = self.image.get_rect(topleft=(x, y))
         self.contents = contents
 

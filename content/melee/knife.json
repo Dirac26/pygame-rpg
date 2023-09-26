@@ -1,0 +1,12 @@
+{
+    "name": "knife",
+    "image_path": "./assets/images/knife-ingame.png",
+    "damage": 5,
+    "swing_speed": 5,
+    "lore": "boom boom",
+    "inventory_image_path": "./assets/images/knife-inventory.png",
+    "swing_cooldown": 1000,
+    "swing_style": "sweep",
+    "knockback": 20,
+    "swing_sound": "./assets/sounds/knife-swing.wav"
+    }

@@ -2,10 +2,9 @@ import pygame
 import math
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, damage, speed, image_path):
+    def __init__(self, damage, speed, image_path, start_x, start_y, distance=1000, knockback_distance=10):
         super().__init__()
-
-        # Assuming you want a simple rectangle for the bullet, otherwise you can load an image
+        self.image = pygame.image.load(image_path)
         self.original_image = pygame.image.load(image_path)
         self.image = self.original_image.copy()
         self.rect = self.image.get_rect()
@@ -13,6 +12,11 @@ class Bullet(pygame.sprite.Sprite):
         self.y = 0
         self.damage = damage
         self.speed = speed
+        self.start_x = start_x
+        self.start_y = start_y
+        self.distance = distance
+        self.knockback_distance = knockback_distance
+
 
 
     def update(self):
@@ -23,9 +27,7 @@ class Bullet(pygame.sprite.Sprite):
 
         self.rect.x += self.dx * self.speed
         self.rect.y += self.dy * self.speed
-
-        # Remove bullet if it goes off-screen (for optimization)
-        if self.rect.bottom < 0:
+        if self.rect.x > self.start_x + self.distance or self.rect.x < self.start_x - self.distance:
             self.kill()
 
     def rotate_based_on_direction(self):

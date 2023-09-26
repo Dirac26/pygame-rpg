@@ -8,7 +8,6 @@ class Interactable:
         self.interacted = False
         self.angle = angle
         self.id = id
-        self.image = None
 
     def interact(self, *args, **kwargs):
         if self.once_only and self.interacted:
@@ -34,6 +33,7 @@ class Entrance(Interactable):
         super().__init__(rect, self.change_map, once_only=False)
         self.is_open = False 
         self.to_map_id = to_map_id
+        self.image = None
     
     def change_map(self, player):
         player.transition_to_map(self.to_map_id)
@@ -48,9 +48,11 @@ class WoodenChest(Interactable):
         self.required_key_name = required_key_name
         self.is_open = False 
         
-        self.closed_image = pygame.image.load('../assets/images/closed_chest.png')
-        self.open_image = pygame.image.load('../assets/images/opened_chest.png')
+        self.closed_image = pygame.image.load('./assets/images/closed_chest.png')
+        self.open_image = pygame.image.load('./assets/images/opened_chest.png')
         self.image = self.closed_image
+        self.open_sound = pygame.mixer.Sound('./assets/sounds/wooden-chest-open.wav')
+        self.open_sound.set_volume(0.2)
 
     def open_chest(self, player):
         if not self.is_open:
@@ -62,6 +64,7 @@ class WoodenChest(Interactable):
                     pass
             else:
                 self.give_items(player)
+                self.open_sound.play()
 
     def give_items(self, player):
         # Code to give items to the player

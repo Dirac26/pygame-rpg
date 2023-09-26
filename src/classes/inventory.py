@@ -23,12 +23,12 @@ class Inventory:
         self.logger = Logger()
         self.selected_item = None
         self.empty_slot_image = {
-            "head": pygame.image.load('../assets/images/empty_head_piece.png'),
-            "chest": pygame.image.load('../assets/images/empty_chest_piece.png'),
-            "leg": pygame.image.load('../assets/images/empty_leg_piece.png'),
-            "boots": pygame.image.load('../assets/images/empty_boots_piece.png'),
-            "weapon": pygame.image.load('../assets/images/empty_gun_piece.png'),
-            "melee": pygame.image.load('../assets/images/empty_melee_piece.png'),
+            "head": pygame.image.load('./assets/images/empty_head_piece.png'),
+            "chest": pygame.image.load('./assets/images/empty_chest_piece.png'),
+            "leg": pygame.image.load('./assets/images/empty_leg_piece.png'),
+            "boots": pygame.image.load('./assets/images/empty_boots_piece.png'),
+            "weapon": pygame.image.load('./assets/images/empty_gun_piece.png'),
+            "melee": pygame.image.load('./assets/images/empty_melee_piece.png'),
         }
 
     def add_item(self, item):
@@ -151,7 +151,6 @@ class Inventory:
                             self.on_item_click(item)
                         # Check if clicked on the "Use" button
                         if 400 <= x <= 500 and self.text_y <= y <= self.text_y + 50:
-                            print(self.selected_item)
                             self.use_selected_item(player)
 
                                 

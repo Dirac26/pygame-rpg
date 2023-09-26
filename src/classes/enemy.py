@@ -15,50 +15,56 @@ def enemy_constructor(x, y, enemy_type):
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y, ai, loot_pool=None):
         super().__init__()
-        self.image = pygame.image.load("../assets/images/zombie1.png")
+        self.image = pygame.image.load("./assets/images/zombie1.png")
+        self.name = "zombie"
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
         self.health = 100
-        self.malee_damage = 10
+        self.melee_damage = 10
+        self.knockback_distance = 10
         self.speed = 2
         self.agro = False
         self.ai = ai
         self.dx = 0
         self.dy = 0
-        self.loot_pool = [InventoryBullet("9mm-bullets", "../assets/images/9mm-inventory.png", 20)]
+        self.loot_pool = [InventoryBullet("9mm-bullets", "./assets/images/9mm-inventory.png", 20)]
         self.last_position = self.rect.topleft
 
-    def update(self, player_pos, map):
+    def update(self, player, map):
+        player_pos = (player.rect.x, player.rect.y)
         self.ai.update(self, player_pos, map)
         if self.dx > 0:
             self.current_image = self.image
         else:
             self.current_image = pygame.transform.flip(self.image, True, False)
         if self.health <= 0:
-            return self.die(map)
+            return self.die(map, player)
 
     def draw(self, surface):
         surface.blit(self.current_image, self.rect)
         pygame.draw.rect(surface, (255, 0, 0), self.rect, 2)
     
-    def die(self, map):
+    def die(self, map, player):
         self.drop_loot(map)
+        player.kill_counts[self.name] += 1
         self.kill()
 
     def drop_loot(self, map):
         bag = Bag(self.rect.x, self.rect.y, self.loot_pool)
         map.loot_bags.add(bag)
     
-    def take_damage(self, bullet):
-        self.health -= bullet.damage
-        dx = bullet.rect.x - self.rect.x
-        dy = bullet.rect.y - self.rect.y
+    def take_damage(self, damage, knockback_distance, x, y):
+        self.health -= damage
+        dx = x - self.rect.x
+        dy = x - self.rect.y
         distance = (dx**2 + dy**2)**0.5
         if distance > 0:
             dx /= distance
             dy /= distance
-        self.rect.x -= dx * 10
-        self.rect.y -= dy * 10
+        self.rect.x -= dx * knockback_distance
+        self.rect.y -= dy * knockback_distance
+
+
     def is_in_zone(self, zones):
         for zone in zones:
             if self.rect.colliderect(zone.x, zone.y, zone.width, zone.height):
@@ -88,7 +94,6 @@ class BasicEnemyAI:
         else:
             
             if self.target_x is None or self.target_y is None or time() - self.last_time_moved > self.max_wait_time:
-                print("not agro")
                 self.choose_random_point(enemy)
                 return
         

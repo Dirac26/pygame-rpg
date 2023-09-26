@@ -6,6 +6,8 @@ from classes.gun import Gun
 from classes.interactable import WoodenChest
 from classes.interactable import Entrance
 from classes.enemy import enemy_constructor
+from classes.npc import NPC
+from utils.parser import parse_content_json
 
 class Map:
     def __init__(self, map_path):
@@ -33,15 +35,17 @@ class Map:
                 chest_id = object.properties.get('obj_id')
                 if chest_type == 'wooden_chest':
                     # Add a chest with gold items at object.x, object.y
-                    items = [InventoryBullet("9mm-bullets", "../assets/images/9mm-inventory.png", 20)]
+                    items = [InventoryBullet("9mm-bullets", "./assets/images/9mm-inventory.png", 20)]
                     chest = WoodenChest(object.x, object.y, items, id=chest_id, angle=angle)
                     self.interactables.append(chest)
                 elif chest_type == "starter_chest":
                     # Add a chest with gold items at object.x, object.y
-                    items = [InventoryGun("pistol", "../assets/images/glock-inventory.png", Gun("pistol", None)),
-                             InventoryMelee("knife", "../assets/images/knife-inventory.png"),
-                             InventoryGun("machine_gun", "../assets/images/m4a1-inventory.png", Gun("machine_gun", None)),
-                             InventoryBullet("5.56-bullets", "../assets/images/5.56-inventory.png", 300)
+                    items = [
+                             parse_content_json("./content/weapons/m4a1.json"),
+                             parse_content_json("./content/bullets/5.56.json"),
+                             parse_content_json("./content/bullets/shells.json"),
+                             parse_content_json("./content/weapons/shotgun.json"),
+                             parse_content_json("./content/melee/knife.json"),
                              ]
                     chest = WoodenChest(object.x, object.y, items, id=chest_id, angle=angle)
                     self.interactables.append(chest)
@@ -57,6 +61,11 @@ class Map:
                 enemy_type = object.properties.get('obj_type')
                 enemy = enemy_constructor(object.x, object.y, enemy_type)
                 self.enemies.add(enemy)
+            if "npc" in object.name:
+                npc_name = object.properties.get('obj_type')
+                npc = NPC(object.x, object.y, npc_name)
+                self.npcs.append(npc)
+                self.interactables.append(npc)
         self.get_map_zones()
 
     def get_spawn_point(self, from_map_id):

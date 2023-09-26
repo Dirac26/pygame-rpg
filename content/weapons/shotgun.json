@@ -1,0 +1,18 @@
+{
+    "name": "shotgun",
+    "bullet_name": "shells",
+    "bullet_damage": 15,
+    "bullet_speed": 40,
+    "bullet_image_path": "./assets/images/5.56-ingame.png",
+    "clip_size": 5,
+    "current_ammo": 5,
+    "reload_time": 5000,
+    "lore": "boom boom",
+    "inventory_image_path": "./assets/images/shotgun-inventory.png",
+    "fire_rate": 500,
+    "bullet_distance": 100,
+    "shooting_style": "shotgun",
+    "knockback_distance": 10,
+    "shoot_sound": "./assets/sounds/m4a1-shoot.wav",
+    "reload_sound": "./assets/sounds/shotgun-reload.wav"
+    }

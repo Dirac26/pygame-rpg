@@ -26,7 +26,7 @@ class StatusEffect:
         self.duration = duration
         self.timer = 0
         self.time_since_last_tick = 1
-        self.image = pygame.image.load("../assets/images/slowed_status.png")
+        self.image = pygame.image.load("./assets/images/slowed_status.png")
         self.font = pygame.font.SysFont(None, 24)
 
 
@@ -53,7 +53,7 @@ class SlowEffect(StatusEffect):
     def __init__(self, duration, slow_amount):
         super().__init__("slow", duration)
         self.slow_amount = slow_amount
-        self.image = pygame.image.load("../assets/images/slowed_status.png")
+        self.image = pygame.image.load("./assets/images/slowed_status.png")
 
     def effect(self, player):
         new_speed = player.max_speed - (player.max_speed * self.slow_amount)
@@ -67,7 +67,7 @@ class DamageEffect(StatusEffect):
         super().__init__("damage", duration)
         self.damage_per_tick = damage_per_tick
         self.tick_interval = tick_interval
-        self.image = pygame.image.load("../assets/images/bleed_status_effect.png")
+        self.image = pygame.image.load("./assets/images/bleed_status_effect.png")
 
     def effect(self, player):
         if self.is_active():

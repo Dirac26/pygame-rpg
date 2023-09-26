@@ -1,35 +1,7 @@
 import pygame
+from classes.gun import Gun
+from classes.melee import MeleeWeapon
 
-atter_dict = {
-    "pistol": {
-        "damage": 10,
-        "fire_rate": 1,
-        "bullet_speed": 10,
-        "bullet_count": 1,
-        "bullet_spread": 0,
-        "bullet_type": "9mm",
-        "lore": "A pistol that has been passed down through \n generations of your family"
-    },
-    "machine_gun": {
-        "damage": 10,
-        "fire_rate": 1,
-        "bullet_speed": 10,
-        "bullet_count": 1,
-        "bullet_spread": 0,
-        "bullet_type": "9mm",
-        "lore": "machine gun, it shoots fast i guess"
-    },
-    "9mm-bullets": {
-        "lore": "these are not candy theese are bullets \n used for small pistols",
-    },
-    "knife": {
-        "damage": 10,
-        "lore": "a knife, not very special but it does the job"
-    },
-    "5.56-bullets": {
-        "lore": "high damage bullets used for machine guns\n they also look like they hurt"
-}
-}
 class Item:
     def __init__(self, name, inventory_image_path):
         self.name = name
@@ -44,28 +16,52 @@ class InventoryGun(Item):
         self.count = 1
         self.type = "gun"
         self.item_object = item_object
-        self.attributes = atter_dict[item_object.name]
+        self.attributes = {
+            "name": self.name
+        }
 
     def use(self, player):
         # Change player's primary gun
         player.active_weapon = self
 
+    @classmethod
+    def from_data(cls, data):
+        return cls(data['name'],
+                   data['inventory_image_path'], Gun.from_data(data))
+
 class InventoryMelee(Item):
-    def __init__(self, name, inventory_image_path):
+    def __init__(self, name, inventory_image_path, item_object):
         super().__init__(name, inventory_image_path)
         self.count = 1
         self.type = "melee"
-        self.attributes = atter_dict[name]
+        self.item_object = item_object
+        self.attributes = {
+            "name": self.name
+        }
+
+    @classmethod
+    def from_data(cls, data):
+        return cls(data['name'],
+                   data['inventory_image_path'], MeleeWeapon.from_data(data))
 
     def use(self, player):
         # Change player's primary gun
         player.melee_weapon = self
+
+    
 
 class InventoryBullet(Item):
     def __init__(self, name, inventory_image_path, count):
         super().__init__(name, inventory_image_path)
         self.count = count
         self.type = "bullet"
-        self.attributes = atter_dict[name]
+        self.attributes = {
+            "name": self.name
+        }
+
+    @classmethod
+    def from_data(cls, data, count):
+        return cls(data['name'],
+                   data['inventory_image_path'], count)
 
 
